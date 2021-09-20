@@ -1,0 +1,81 @@
+{% extends "layouts/base.htm" %}
+{% import "macro/form.htm" as form %}
+{% block page_title %}Sincronizzazione B2B{% endblock %}
+
+
+{% block content %}
+<p>Seleziona l'operazione da effettuare:</p>
+<button class="btn btn-default" onclick="importa('clienti')" type="button"><i class="fa fa-users"></i> Clienti</button>
+<button class="btn btn-default" onclick="importa('listini')" type="button"><i class="fa fa-money"></i> Listini</button>
+<button class="btn btn-default" onclick="importa('articoli')" type="button"><i class="fa fa-list"></i> Articoli</button>
+
+
+<button type="button" class="btn btn-info pull-right" onclick="document.location.reload()"><i class="fa fa-refresh"></i> Refresh page</button>
+<div class="row m-t-10">
+<div class="col-md-12">
+{% if lista  %}
+<table class="table">
+	<thead>
+		<td>Tipo</td>
+		<td>Data richiesta</td>
+		<td>Stato</td>
+		<td>Inizio</td>
+		<td>Fine</td>
+		
+	</thead>
+	<tbody>
+		{% for v in lista %}
+		<tr>
+			<td>
+				{{v.type|upper}}
+			</td>
+			<td>
+				{{v.timestamp}}
+			</td>
+			<td>
+				
+				{{v.stato|raw}}
+			</td>
+			<td>
+				{{v.startDate}}
+			</td>
+
+			<td>
+				{{v.endDate}}
+			</td>
+		</tr>
+		{% endfor %}
+
+	</tbody>
+</table>
+{% endif %}
+</div>
+</div>
+
+<script>
+
+function importa(tipo) {
+	var t = confirm("Sicuro di veler avviare questa importazione?");
+	if( t ){
+		$.ajax({
+			type: "GET",
+			url: `index.php?ctrl=Job&mod=b2b&action=import&ajax=1&type=${tipo}`,
+			dataType: 'json',
+			success: function (data) {
+			   
+				if (data.result == 'nak') {
+					alert("E' gia presente una richiesta di importazione per questa risorsa");
+				}else{
+					document.location.reload();
+				}
+			},
+			error: function(error){
+				console.error(error);
+			}
+		});
+	}
+}
+
+
+</script>
+{% endblock %}

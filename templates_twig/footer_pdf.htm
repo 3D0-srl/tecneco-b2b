@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<script>
+window.onload = function() {
+    var vars = {};
+    var x = document.location.search.substring(1).split('&');
+    for (var i in x) {
+        var z = x[i].split('=', 2);
+        vars[z[0]] = unescape(z[1]);
+    }
+
+    //if current page number == last page number
+    if (vars['page'] == vars['topage']) {
+        document.querySelectorAll('.extra')[0].innerHTML = document.querySelector('#footerino').innerHTML;
+    }
+};
+</script>
+
+<style>
+.text-footer-site {
+	text-align: center;
+	font-size: 12px;
+}
+</style>
+
+
+
+<div id="footerino" style="display:none"><div class="text-footer-site"> <strong>TECNECO</strong>FILTRATION <strong>© {{"now"|date("Y")}} - People Ideas Products</strong> </div></div>
+
+<div class="extra">
+</div>

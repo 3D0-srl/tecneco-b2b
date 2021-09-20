@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>
+{% if cart.aggiunto_a %}Aggiunta ad ordine {{data.number}}{% else %}Proposta d'ordine {{cart.number}}{% endif %} - ecommere.tecneco.com
+</title>
+<style>
+
+@font-face {
+  font-family: 'Times New Roman';
+  src: url('http://catalogo.tecneco.com/modules/b2b/images/times-new-roman.eot');
+  src: url('http://catalogo.tecneco.com/modules/b2b/images/times-new-roman.eot?#iefix') format('embedded-opentype'),
+  url('http://catalogo.tecneco.com/modules/b2b/images/times-new-roman.woff') format('woff'),
+  url('http://catalogo.tecneco.com/modules/b2b/images/times-new-roman.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@page {
+  size: A4;
+}
+
+html, body {
+	height: 100%;
+	font-family: 'Times New Roman';
+}
+
+table
+{
+	width: 100%;
+	margin-bottom: 30px;
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+*
+{
+	font-size: 12px;
+	line-height: 15px;
+	color: #000;
+}
+
+td
+{
+	padding: 1px 2px;
+	border: 1px solid #b3b3b3;
+	margin: 0;
+	border-spacing:0px;
+	border-collapse: collapse;
+}
+
+.tabella2 td
+{
+	border:0;
+}
+
+.text-footer-site {
+	width: 100%;
+	text-align: center;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+}
+
+tr {
+  page-break-inside: avoid !important; 
+}
+
+
+</style>
+</head>
+<body>
+	<div id="body">
+		<div id="content">
+			<div class="page" style="font-size: 11px;">
+				<table style="border:0;">
+					<tr>
+						<td valign="top" style="width: 50%;border:0;text-align: left;vertical-align:top;">
+							<span><img src="{{baseurl}}new_logo.png" style="width:100px;float:left;margin-right:15px;" alt="Tecneco Filters"></span>
+							<span><img src="{{baseurl}}logo.png" style="width:150px;float:left;margin-top:10px;margin-right:15px;" alt="Nishiboru Filters"></span>
+							<span><img src="{{baseurl}}adplus.png" style="width:100px;float:left;" alt="AD Plus"></span>
+						</td>
+						<td style="width: 50%;text-align: left;border:0;font-size:14px;padding-left:10%;">
+							<strong>Ragione sociale</strong>
+							<br>
+							{{cart.company}}<br><br>
+							<strong>Codice cliente:</strong>
+							<br>
+							{{cart.codice_cliente}}<br><br>
+							<strong>Indirizzo</strong><br>{{cart.address}}, {{cart.postalCode}} {{cart.city}} ({{cart.province}})<br><br>
+							<br>	
+						</td>
+					</tr>
+				</table>
+				<h1 style="font-weight: 700;text-align: center;margin-bottom: 30px;text-transform: uppercase;font-size: 24px !important;">
+				{% if cart.aggiunto_a %}
+				Aggiunta ad ordine {{cart.aggiunto_a}}/1
+				{% else %}
+				Proposta d'ordine {{cart.number}}
+				{% endif %}
+				{% if cart.evacuationDate %}
+				effettuato in data {{cart.evacuationDate}}
+				{% endif %}
+				</h1>
+				<table width="750" style="margin: 0px auto;width:750px;">
+					<tr>
+						<td><strong>CODICE</strong></td>
+						<td style="width:150px;"><strong>DESC.</strong> </td>
+						<td><strong>LIST. ITALIA</strong></td>
+						<td><strong>SCONTO</strong></td>
+						<td style="width:50px;"><strong>NETTO CAMPAGNA</strong></td>
+						<td><strong>NETTO</strong></td>
+						<td><strong>QTA</strong></td>
+						<td><strong>TOT</strong></td>
+					</tr>
+					</tr>
+					{% for riga in ordini %}
+					<tr id="riga_{{riga.id_product}}">
+						<td width="60">
+							<a href="http://www.tecneco.com/index.php?p=get_scheda_filtro&codice={{riga.sku}}" target="_blank">
+								{{riga.sku}}
+								{% if riga.promo %}
+								{% if controllo_data_promo(riga.date_from,riga.date_to) %}*{% endif %}
+								{% endif %}
+							</a>
+						</td>
+						<td width="90">{{riga.descrizione}}</td>
+						<td width="30">
+							{% if riga.listino_italia %}				 
+							€{{formattanumero(riga.listino_italia)}}
+							{% endif %}
+						</td>
+						<td width="40">
+							
+							{% for sconto in riga.sconti %}
+							{% if sconto %}
+							<span>-{{sconto}}%</span>
+							{% endif %}
+							{% endfor %}
+							
+						</td>
+						<td width="40">
+							{% if riga.campagna_tipo == 'prezzo' %}
+								€{{formattanumero(riga.prezzo_base)}}
+							{% endif %}
+						</td>
+						<td width="30">
+							€<span id="prezzo_unita">{{formattanumero(riga.prezzo)}}</span>
+						</td>
+						<td width="10">{{riga.qnt_input}} {%if riga.quantita_omaggio %}<span style="color: #EE2323; font-style: italic;">+{{riga.quantita_omaggio}} omaggio</span>{% endif %}</td>
+						<td width="30">
+							€<span id="tot_riga">{{formattanumero(riga.totale)}}</span>
+						</td>
+					</tr>
+					{% endfor %}
+					<tr>
+						<td style="border-top: 2px solid #b3b3b3;" colspan="2"><strong>Totale pz.</strong></td>
+						<td style="border-top: 2px solid #b3b3b3;" colspan="2"><strong>Totale</strong></td>
+						<td style="border-top: 2px solid #b3b3b3;" colspan="2"><strong>Iva</strong></td>
+						<td style="border-top: 2px solid #b3b3b3;" colspan="2"><strong>Totale Iva incl.</strong></td>
+					</tr>
+					<tr>
+						<td colspan="2">{{data.num_products}} {%if data.qnt_omaggio %}<span style="color: #EE2323; font-style: italic;">+{{data.qnt_omaggio}} omaggio</span>{% endif %}</td>
+						<td colspan="2">€<span  class="totale_carrello">{{formattanumero(data.total_without_vat)}}</span></td>
+						<td colspan="2">€<span id="" class="totale_carrello">{{formattanumero(data.total_vat)}}</span></td>
+						<td colspan="2">€<span id="" class="totale_carrello"><strong>{{formattanumero(data.total)}}</strong></span></td>
+					</tr>
+					<tr >
+						<td colspan="8" style="border-top: 2px solid #b3b3b3;">
+								<strong >Destinazione merce</strong><br>{{cart.company}} {{cart.shippingAddress}}, {{cart.shippingPostalCode}} {{cart.shippingCity}}({{cart.shippingProvince}})<br><br>
+								<strong>Note cliente</strong><br>{{cart.note}}		
+						</td>
+					</tr>
+					
+
+				</table>
+				<div style="display: block;clear: both;margin: 0 auto;margin-top: 0px;padding-top: 0px;text-align: center;height: 10px;">	</div>
+							
+				 <div style="display: block;clear: both;margin: 0 auto;margin-top: 20px;padding-top: 20px;text-align: left;">
+				
+				 </div>
+				
+			</div>
+        </div>
+	</div>
+</body>
+</html>

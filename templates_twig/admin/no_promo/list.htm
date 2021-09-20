@@ -1,0 +1,74 @@
+{% extends "layouts/base.htm" %}
+
+{% block page_title %}Clienti per cui sono escluse le promozioni{% endblock %}
+
+{% block content %}
+<style>
+.table > thead > tr > th, .table > tbody > tr > th, .table > tfoot > tr > th, .table > thead > tr > td, .table > tbody > tr > td, .table > tfoot > tr > td {
+    padding: 3px;
+    line-height: 1.428571429;
+    vertical-align: top;
+    border: 0;
+    border-top: 1px solid #DFE1E6;
+    max-width: 150px !important;
+    word-wrap: break-word;
+    font-size: 15px;
+</style>
+{% if add %}
+
+<div class="row m-b-10">
+	<div class="col-md-12">
+				<form action="index.php">
+				<input name="mod" type="hidden" value="b2b">
+				<input name="ctrl" type="hidden" value="Nopromo">
+				<input name="action" type="hidden" value="add">
+				
+				<label>Inserisce il codice del cliente</label>
+				<input name="codice" type="text" class="form-control">
+				<div class="col-md-12">
+					<br>
+					
+					<button class="btn btn-sm btn-success pull-right"><i class="fa fa-save"></i> salva</button>
+					<button type="button" onclick="document.location.href='index.php?mod=b2b&ctrl=Nopromo'" class="btn btn-sm btn-default pull-right"><i class="fa fa-undo"></i> annulla</button>
+					<br>
+					<br>
+				</div>
+				</form>
+	</div>
+</div>	
+{% endif %}
+
+<table class="table">
+	<thead>
+		<th>Codice cliente</th>
+		<th>Ragione sociale</th>
+		<th></th>
+	</thead>
+		{% for v in list %}
+			<tr>
+				<td>
+					{{v.codice_gestionale}}
+				</td>
+	
+				<td>
+					{{v.company}}
+				</td>
+				<td>
+					<button class="btn btn-sm btn-danger pull-right" onclick="var t=confirm('Sicuro di voler eliminare questo elemento?'); if(t){document.location.href='index.php?mod=b2b&ctrl=Nopromo&action=delete&codice={{v.codice_gestionale}}'}"><i class="fa fa-trash-o"></i> elimina</button>
+				</td>
+			</tr>
+
+		{% endfor %}
+		
+	<tbody>
+	</tbody>
+	{% if add is null %}
+	<tfoot>
+		<td colspan="2"></td>
+		<td><button onclick="document.location.href='index.php?mod=b2b&ctrl=Nopromo&add=1'" class="btn btn-success pull-right"><i class="fa fa-plus"></i> aggiungi</button></td>
+	</tfoot>
+	{% endif %}
+</table>
+
+
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "layouts/base.htm" %}
+{% block page_title %}Richieste GDPR{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 table-responsive">
+        {% if list %}
+        <table id="sezioni-table" class="table table-tools table-hover">
+            <thead>
+                <tr>
+                    <th style="min-width:70px"><strong>{{tr('id')}}</strong></th>
+                    <th><strong>{{tr('Nome utente')}}</strong></th>
+                    <th><strong>{{tr('Tipo')}}</strong></th>
+                    <th><strong>{{tr('Revisionata')}}</strong></th>
+                    <th><strong>{{tr('Approvata')}}</strong></th>
+                    <th class="text-center">
+                        <strong></strong>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in list %}
+                <tr>
+                    <td>{{v.id}}</td>
+                    <td>{{v.name | upper}}</td>
+                    <td>
+                        {% if v.type=='DATAREQUEST' %}
+                        <span>Aggiornamento Dati</span>
+                        {% else %}
+                        <span>Aggiornamento Indirizzo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if v.state %}
+                        <span class="label label-success">{{'Revisionata'|upper}}</span>
+                        {% else %}
+                        <span class="label label-warning">{{'Da revisionare'|upper}}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if v.state %}
+                            {% if v.approved%}
+                            <span class="label label-success">{{'Approvata'|upper}}</span>
+                            {% else %}
+                            <span class="label label-danger">{{'Rifiutata'|upper}}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="label label-warning">{{'Revisione in corso'|upper}}</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-center">
+                        <div class="btn-group media-group">
+                            <a href="http://catalogo.tecneco.com/backend/index.php?ctrl=Gdpr&mod=b2b&action=details&id={{v.id}}&type={{v.type}}" class="btn btn-default btn-sm"><i class="fa fa-cong"></i>
+                                Dettagli
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+        {% else %}
+        {{tr('no_record')}}
+        {% endif %}
+    </div>
+    {% if links %}
+    <div class="m-t-30 align-center">
+        {{links.all|raw}}
+    </div>
+    {% endif %}
+</div>
+</div>
+
+
+{% endblock %}

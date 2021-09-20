@@ -1,0 +1,17 @@
+{% extends "layouts/base_form.htm" %}
+
+{% block edit_page_title %}Promozioni{% endblock %}
+
+{% block content %}
+
+{% import "macro/form.htm" as form %}
+
+
+{{form.build(dataform.id)}}
+{{form.buildCol(dataform.title)}}
+{{form.buildCol(dataform.description)}}
+{{form.buildUploadImage(dataform.image)}}
+{{form.dropzone(dataform.file)}}
+{{form.buildCol(dataform.active)}}
+
+{% endblock %}

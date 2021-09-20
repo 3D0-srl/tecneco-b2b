@@ -1,0 +1,171 @@
+{% extends 'layouts/mail.htm' %}
+{% block content %}
+<!--BODY-->
+
+<style>
+	#products td,
+	#products td strong,
+	#products th,
+	#products th strong {
+		text-align:center;
+	}
+
+</style>
+
+<table width="700" cellspacing="0" cellpadding="0" align="center" style="background:#fff;">
+	<tr><td height="10"></td><tr>
+	<tr>
+		<td width="700" >
+			<font face="Myriad Pro" size="5">
+				<strong>
+				{% if cart.aggiunto_a %}Aggiunta ad ordine {{data.number}}{% else %}Ordine {{cart.number}}{% endif %}  <span>effettuato in data {{cart.evacuationDate|date("d/m/Y")}}</span>
+				</strong>
+			</font>
+		</td>
+	</tr>
+	<tr><td width="700" height="10" style="border-bottom: 6px solid #ffda00"></td><tr>
+	<tr><td width="700" height="20"></td><tr>
+	<tr>
+		<table id="products" width="700" cellspacing="0" cellpadding="5" align="center" style="background:#fff;table-layout:fixed;">
+			<tr>
+				<th align="center">
+					<font face="Myriad Pro" size="2">
+						<strong>CODICE</strong>
+					</font>
+				</th>
+				<th align="center">
+					<font face="Myriad Pro" size="2"> <strong>DESC.</strong> </font>
+				</th>
+				<th align="center">
+					<font face="Myriad Pro" size="2">
+						<strong>LIST.<br> ITALIA</strong>
+					</font>
+				</th>
+				<th align="center">
+					<font face="Myriad Pro" size="2">
+						<strong>SCONTO</strong>
+					</font>
+				</th>
+				<th align="center">
+					<font face="Myriad Pro" size="2">
+						<strong>NETTO<br> CAMPAGNA</strong>
+					</font>
+				</th>
+				<th align="center">
+					<font face="Myriad Pro" size="2">
+						<strong>NETTO</strong>
+					</font>
+				</th>
+				<th width="30" align="center">
+					<font face="Myriad Pro" size="2">
+						<strong>QTA</strong>
+					</font>
+				</th>
+				<th align="center">
+					<font face="Myriad Pro" size="2">
+						<strong>TOT</strong>
+					</font>
+				</th>
+			</tr>
+			{% for row in data.rows %}
+			<tr style="border-bottom: 1px solid #cccccc">
+				<td align="center">
+					<font face="Myriad Pro" size="1" color="#000" style="display: inline-block;">
+						<a href="https://www.tecneco.com/index.php?p=get_scheda_filtro&codice={{row.sku}}" target="_blank" style="color: #000;">
+							{{row.sku}}
+						</a>
+					</font>
+				</td>
+				<td align="center">
+					<font face="Myriad Pro" size="1" color="#000">	
+						{{row.descrizione}}
+					</font>
+				</td>
+				<td align="center">
+					<font face="Myriad Pro" size="1" color="#000">
+						{% if row.listino_italia %}
+						€{{formattanumero(row.listino_italia)}}
+						{% endif %}
+					</font>
+				</td>
+				<td align="center">
+					<font face="Myriad Pro" size="1" color="#000">
+						
+							{% for s in row.sconti %}
+							<span class="clearfix">-{{s}}%</span><br>
+							{% endfor %}
+						
+					</font>
+				</td>
+				<td align="center">
+					<font face="Myriad Pro" size="1" color="#000">
+						{% if row.campagna_tipo == 'prezzo' %}
+							€{{formattanumero(row.prezzo_base)}}
+						{% endif %}
+					</font>
+				</td>
+				<td align="center">
+					<font face="Myriad Pro" size="1" color="#000">
+						€<span id="prezzo_unita">{{formattanumero(row.prezzo)}}</span>
+					</font>
+				</td>
+				<td width="30" align="center">
+					<font face="Myriad Pro" size="1" color="#000">
+						{{row.qnt_input}}{% if row.quantita_omaggio %} +{{row.quantita_omaggio}} omaggio{% endif %}
+					</font>
+				</td>
+				<td align="center">
+					<font face="Myriad Pro" size="1" color="#000">
+						€<span id="tot_riga">{{formattanumero(row.totale)}}</span>
+					</font>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+
+		<table width="700" align="center" valign="top">
+			<tr valign="top"><td width="400" height="20"></td><td width="400" height="20"></td><tr>
+			<tr valign="top">
+				<td valign="top" width="400">
+					<strong>Ragione sociale</strong>
+					<br>
+					{{cart.company}}<br><br>
+					<strong>Codice cliente:</strong>
+					<br>
+					{{cart.codice_cliente}}<br><br>
+					<strong>Indirizzo</strong><br>{{cart.address}}, {{cart.postalCode}} {{cart.city}} {% if cart.province %}({{cart.province}}) {% endif %}<br><br>
+					<strong>Destinazione merce</strong><br>{{cart.shippingAddress}} {{cart.shippingPostalCode}} {{cart.shippingCity}} {% if cart.shippingProvince %}({{cart.shippingProvince}}) {% endif %}<br><br>
+					<strong>Note cliente</strong><br>{{cart.note}}
+				</td>
+				<td valign="top" width="420">
+					<table valign="top" width="400" style="text-align: right;">
+						<tr>
+							<td valign="top" style="text-align: right;" width="200"><strong>Totale pz.</strong><br><br></td>
+							<td valign="top" style="text-align: right;" width="200">{{data.num_products}} {%if data.quantita_omaggio %}+{{data.quantita_omaggio}} omaggio{% endif %}<br><br> </td>
+						</tr>
+						<tr>
+							<td valign="top" style="text-align: right;" width="200"><strong>Totale</strong><br><br></td>
+							<td valign="top" style="text-align: right;" width="200">€<span  class="totale_carrello">{{formattanumero(data.total_without_vat)}}</span><br><br></td>
+						</tr>
+						<tr>
+							<td valign="top" style="text-align: right;" width="200"><strong>Iva</strong><br><br></td>
+							<td valign="top" style="text-align: right;" width="200">€<span id="" class="totale_carrello">{{formattanumero(data.total_vat)}}</span><br><br></td>
+						</tr>
+						<tr>
+							<td valign="top" style="text-align: right;" width="200"><strong>Totale Iva incl.</strong><br><br></td>
+							<td valign="top" style="text-align: right;" width="200">€<span id="" class="totale_carrello">{{formattanumero(data.total)}}</span><br><br></td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr><td width="400" height="20"></td><td width="400" height="20"></td><tr>
+		</table>
+
+
+
+		
+	
+<!--FINE BODY-->
+
+
+{% endblock %}

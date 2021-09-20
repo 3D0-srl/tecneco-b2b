@@ -1,0 +1,71 @@
+{% extends "layouts/base.htm" %}
+{% block page_title %}Domande sondaggio{% endblock %}
+{% block url_add %}{{parent()}}&id_survey={{id_survey}}&id_survey_question={{id_survey_question}}{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 table-responsive">
+        {% if list %}
+        <table id="sezioni-table" class="table table-tools table-hover">
+            <thead>
+                <tr>
+                    <th style="min-width:70px"><strong>{{tr('id')}}</strong></th>
+                    <th style="min-width:70px"><strong>{{tr('id domanda')}}</strong></th>
+                    <th><strong>{{tr('risposta')}}</strong></th>
+                    <th><strong>{{tr('ordinamento')}}</strong></th>
+                    <th>
+                        <strong>Visualizza</strong>
+                    </th>
+                    <th class="text-center">
+                        <strong>{{tr('actions')}}</strong>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in list %}
+                <tr>
+                    <td>{{v.id}}</td>
+                    <td>{{v.id_survey_question | upper}}</td>
+                    <td>{{v.get('description') | upper}}</td>
+                    <td>{{v.sort | upper}}</td>
+                    <td>
+                        {% if v.active %}
+                        <span class="label label-success">{{'Si'|upper}}</span>
+                        {% else %}
+                        <span class="label label-warning">{{'No'|upper}}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group media-group">
+                            <a href="{{url_edit}}&id={{v.id}}&id_survey={{id_survey}}&id_survey_question={{id_survey_question}}" class="btn btn-default btn-sm"><i class="fa fa-cong"></i>
+                                modifica</a>
+                            <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown">
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu media-menu text-left" role="menu">
+
+                                <li><a href="{{url_duplicate}}&id={{v.id}}"><i class="fa fa-copy"></i>
+                                        {{tr('duplicate')}}</a></li>
+                                <li><a href="{{url_confirm_delete}}&id={{v.id}}"><i class="fa fa-trash-o"></i>
+                                        {{tr('delete')}}</a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+        {% else %}
+        {{tr('no_record')}}
+        {% endif %}
+    </div>
+    {% if links %}
+    <div class="m-t-30 align-center">
+        {{links.all|raw}}
+    </div>
+    {% endif %}
+</div>
+</div>
+
+
+{% endblock %}

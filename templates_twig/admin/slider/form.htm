@@ -1,0 +1,16 @@
+{% extends "layouts/base_form.htm" %}
+
+{% block edit_page_title %}Slide{% endblock %}
+
+{% block content %}
+
+{% import "macro/form.htm" as form %}
+
+
+{{form.build(dataform.id)}}
+{{form.buildCol(dataform.message)}}
+{{form.buildCol(dataform.active)}}
+{{form.buildUploadImage(dataform.image)}}
+{{form.dropzone(dataform.allegati)}}
+
+{% endblock %}

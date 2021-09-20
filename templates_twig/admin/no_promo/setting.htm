@@ -1,0 +1,13 @@
+{% extends "layouts/base_form.htm" %}
+
+{% block edit_page_title %}Clienti per cui sono escluse le promozioni{% endblock %}
+
+{% block content %}
+
+{% import "macro/form.htm" as form %}
+
+{{form.buildCol(dataform.lista)}}
+
+
+
+{% endblock %}

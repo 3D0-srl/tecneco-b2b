@@ -1,0 +1,16 @@
+{% extends "layouts/base_form.htm" %}
+
+{% block edit_page_title %}Questionario{% endblock %}
+
+{% block content %}
+
+{% import "macro/form.htm" as form %}
+
+
+{{form.build(dataform.id)}}
+{{form.buildCol(dataform.name)}}
+{{form.buildCol(dataform.date_from)}}
+{{form.buildCol(dataform.show_popup)}}
+{{form.buildCol(dataform.active)}}
+
+{% endblock %}

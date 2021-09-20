@@ -1,0 +1,119 @@
+{% extends "layouts/base.htm" %}
+{% import "macro/form.htm" as form %}
+{% block page_title %}Associazione Promo a Prodotti{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 table-responsive">
+        <table id="letter-table" class="table">
+            <div style="width: 100%; text-align: center; cursor: pointer;">
+                {% for letter in ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9','0'] %}
+                    {% if active == letter %}
+                        <div style="display:inline-block; font-weight: bold;" onclick="letterChange('{{letter}}'); return false;">
+                            | {{letter | upper}}
+                        </div>
+                    {% else %}
+                        <div style="display:inline-block;" onclick="letterChange('{{letter}}'); return false;">
+                            | {{letter | upper}}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                <div style="display:inline-block;">
+                    |
+                </div>
+            </div>
+        </table>
+        {% if listProduct %}
+        <table id="sezioni-table" class="table table-tools table-hover">
+            <thead>
+                <tr>
+                    <th><strong>{{tr('Codice gestionale')}}</strong></th>
+                    <th><strong>{{tr('Descrizione')}}</strong></th>
+                    <th style="width: 60%">
+                        <table style="width: 100%">
+                            <tr>
+                                <th style="border-bottom:0px">
+                                    <strong>
+                                        {{tr('Testo promo')}}
+                                    </strong>
+                                </th>
+                                <th style="border-bottom:0px">
+                                    <strong>
+                                        {{tr('Data inizio')}}
+                                    </strong>
+                                </th>
+                                <th style="border-bottom:0px">
+                                    <strong>
+                                        {{tr('Data fine')}}
+                                    </strong>
+                                </th>
+								<th style="border-bottom:0px">
+                                    <strong>
+                                        {{tr('Pulsante testo')}}
+                                    </strong>
+                                </th>
+                                <th style="border-bottom:0px">
+                                    <strong>
+                                        {{tr('Azione')}}
+                                    </strong>
+                                </th>
+                            </tr>
+                        </table>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in listProduct %}
+					<tr>
+						<td>{{v.sku}}</td>
+						<td>{{v.name | upper}}</td>
+						<td style="width: 60%">
+                            <form id="form_{{v.id}}">
+                                <table style="width: 100%">
+                                    <tr>
+                                        <td style="border-bottom:0px; padding-right: 15px;">
+                                            {{form.buildCol(dataform[v.id]['description'])}}
+                                        </td>
+                                        <td style="border-bottom:0px; padding-right: 15px; padding-top: 6px;" class="date-control">
+                                            {{form.build(dataform[v.id]['date_from'])}}
+                                        </td>
+                                        <td style="border-bottom:0px; padding-right: 15px; padding-top: 6px;" class="date-control">
+                                            {{form.build(dataform[v.id]['date_to'])}}
+                                        </td>
+										 <td style="border-bottom:0px; padding-right: 15px;">
+                                            {{form.buildCol(dataform[v.id]['pulsante_testo'])}}
+                                        </td>
+                                        <td style="border-bottom:0px; padding-right: 15px; padding-top: 6px;">
+                                            {% if dataform[v.id]['promoted'] %}
+                                            <button type="button" id="btn-remove" class="btn btn-danger rimuovi_{{v.id}}" onclick="rimuovi('{{v.sku}}'); return false;">Rimuovi</button>
+
+											 <button type="button" id="btn-add" class="btn btn-success associa_{{v.id}}" style="display:none" onclick="salva('{{v.id}}','{{v.sku}}'); return false;">Associa</button>
+                                            {% else %}
+                                             <button type="button" style="display:none" id="btn-remove" class="btn btn-danger rimuovi_{{v.id}}" onclick="rimuovi('{{v.sku}}'); return false;">Rimuovi</button>
+
+											 <button type="button" id="btn-add" class="btn btn-success associa_{{v.id}}"  onclick="salva('{{v.id}}','{{v.sku}}'); return false;">Associa</button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </td>
+                    </tr>
+                    <!--{{form.build(dataform[v.sku].id)}}-->
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        {{tr('no_record')}}
+        {% endif %}
+    </div>
+    {% if links %}
+    <div class="m-t-30 align-center">
+        {{links.all|raw}}
+    </div>
+    {% endif %}
+</div>
+</div>
+
+
+{% endblock %}

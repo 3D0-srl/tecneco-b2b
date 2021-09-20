@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<module>
+	 
+	<info> 
+		<id>4234</id>
+		<author>Nello Tortora</author>
+		<name>Ecommerce tecneco API</name>
+		<permission>superadmin</permission>
+		<version>2</version>
+		<tag>b2b</tag>
+		<kind>ecommerce</kind>
+		<scope></scope> 
+		<description><![CDATA[Permette di gestire le richieste dell'ecommerce tecneco]]></description> 
+   </info>
+	
+    <menu> 
+		<scope>admin</scope>
+		
+		
+		<header>
+			<locale> 
+				<name>	
+					<it>Ecommerce</it>
+					<en>Ecommerce</en>
+					<es>Ecommerce</es>
+					<de>Ecommerce</de>
+					<fr>Ecommerce</fr>
+					<pt>Ecommerce</pt>
+				</name>
+			</locale>
+			<tag>b2b_tecneco</tag> 
+			<permission>ecommerce</permission> 
+			<icon>glyph-icon flaticon-shopping80</icon> 		
+			<priority>99</priority> 
+		</header>
+		
+
+		<items>
+			<locale>
+				<name>	
+					<it>GDPR</it>
+					<en>GDPR</en>
+					<es>GDPR</es>
+					<de>GDPR</de>
+					<fr>GDPR</fr>
+					<pt>GDPR</pt>
+				</name>
+			</locale>
+			<tag>b2b_tecneco_gdpr</tag> 
+			<permission>ecommerce</permission>
+			<priority>101</priority> 
+			<url>index.php?ctrl=Gdpr&amp;mod=b2b&amp;action=list</url> 
+		</items>
+
+		<items>
+			<locale>
+				<name>	
+					<it>Questionari</it>
+					<en>Surveys</en>
+					<es>Surveys</es>
+					<de>Surveys</de>
+					<fr>Surveys</fr>
+					<pt>Surveys</pt>
+				</name>
+			</locale>
+			<tag>b2b_tecneco_survey</tag> 
+			<permission>ecommerce</permission>
+			<priority>101</priority> 
+			<url>index.php?ctrl=Surveys&amp;mod=b2b&amp;action=list</url> 
+		</items>
+
+		<items>
+			<locale>
+				<name>	
+					<it>Popups</it>
+					<en>Popups</en>
+					<es>Popups</es>
+					<de>Popups</de>
+					<fr>Popups</fr>
+					<pt>Popups</pt>
+				</name>
+			</locale>
+			<tag>b2b_tecneco_popups</tag> 
+			<permission>ecommerce</permission>
+			<priority>101</priority> 
+			<url>index.php?ctrl=PopupHome&amp;mod=b2b&amp;action=list</url> 
+		</items>
+
+		<items>
+			<locale>
+				<name>	
+					<it>Listini</it>
+					<en>Price lists</en>
+					<es>Price lists</es>
+					<de>Price lists</de>
+					<fr>Price lists</fr>
+					<pt>Price lists</pt>
+				</name>
+			</locale>
+			<tag>b2b_tecneco_price_lists</tag> 
+			<permission>ecommerce</permission>
+			<priority>101</priority> 
+			<url>index.php?ctrl=Pricelist&amp;mod=b2b&amp;action=list</url> 
+		</items>
+
+		<items>
+			<locale>
+				<name>	
+					<it>Promo Prodotti</it>
+					<en>Products Promos</en>
+					<es>Products Promos</es>
+					<de>Products Promos</de>
+					<fr>Products Promos</fr>
+					<pt>Products Promos</pt>
+				</name>
+			</locale>
+			<tag>b2b_tecneco_products_promos</tag> 
+			<permission>ecommerce</permission>
+			<priority>101</priority> 
+			<url>index.php?ctrl=ProductPromo&amp;mod=b2b&amp;action=list</url> 
+		</items>
+
+		<items>
+			<locale>
+				<name>	
+					<it>Promozioni</it>
+					<en>Promos</en>
+					<es>Promos</es>
+					<de>Promos</de>
+					<fr>Promos</fr>
+					<pt>Promos</pt>
+				</name>
+			</locale>
+			<tag>b2b_tecneco_promos</tag> 
+			<permission>ecommerce</permission>
+			<priority>101</priority> 
+			<url>index.php?ctrl=Promos&amp;mod=b2b&amp;action=list</url> 
+		</items>
+
+		<items>
+			<locale>
+				<name>	
+					<it>Banner homepage</it>
+					<en>Home Sliders</en>
+					<es>Home Sliders</es>
+					<de>Home Sliders</de>
+					<fr>Home Sliders</fr>
+					<pt>SurveysHome Sliders</pt>
+				</name>
+			</locale>
+			<tag>b2b_tecneco_slider</tag> 
+			<permission>ecommerce</permission>
+			<priority>101</priority> 
+			<url>index.php?ctrl=Slider&amp;mod=b2b&amp;action=list</url> 
+		</items>
+
+		
+	</menu>
+</module>

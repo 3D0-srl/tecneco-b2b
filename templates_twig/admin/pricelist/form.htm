@@ -1,0 +1,15 @@
+{% extends "layouts/base_form.htm" %}
+
+{% block edit_page_title %}Listini{% endblock %}
+
+{% block content %}
+
+{% import "macro/form.htm" as form %}
+
+{{form.build(dataform.id)}}
+{{form.buildCol(dataform.name)}}
+{{form.dropzone(dataform.file_pdf)}}
+{{form.dropzone(dataform.file_excel)}}
+{{form.buildCol(dataform.active)}}
+
+{% endblock %}

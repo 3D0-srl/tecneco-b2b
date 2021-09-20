@@ -1,0 +1,80 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 10">
+<link rel=File-List href="file/filelist.xml">
+<link rel=Edit-Time-Data href="file/editdata.mso">
+<link rel=OLE-Object-Data href="_file/oledata.mso">
+
+</head>
+
+<body link=blue vlink=purple>
+    <table flexy:if="titolo_excel"><tr><td><b>{{titolo_excel}}</b></td></tr><tr><td></td></tr></table>
+    <table x:str border=0 cellpadding=0 cellspacing=0 width=327 style='border-collapse:collapse;table-layout:fixed;width:245pt'>
+        <col width=64 span=3 style='width:48pt'>
+        <col width=71 style='mso-width-source:userset;mso-width-alt:2596;width:53pt'>
+        <col width=64 style='width:48pt'>
+		
+		<tr>
+                <td><b>ragione sociale</b></td>
+				<td><b>username</b></td>
+                <td><b>password</b></td>
+                
+        </tr>
+		{% for v in utenti %}
+		<tr>
+               <td style="text-align: center;">{{v.ragsoc}}</td>
+			   <td style="text-align: center;">=("{{v.username}}")</td>
+               <td style="text-align: center;">{{v.password}}</td>
+        </tr>
+		{% endfor %}
+
+		
+        
+       
+
+    </table>
+
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,52 @@
+{% extends "layouts/base.htm" %}
+{% block page_title %}Richiesta GDPR{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 table-responsive">
+        <table id="sezioni-table" class="table table-tools table-hover">
+            <thead>
+                <tr>
+                    <th><strong>{{tr('Dato')}}</strong></th>
+                    <th><strong>{{tr('Originale')}}</strong></th>
+                    <th><strong>{{tr('Revisionato')}}</strong></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in data %}
+                    {% if translator[v.name] %}
+                        <tr>
+                            <td>
+                                {{translator[v.name]|upper}}
+                            </td>
+                            <td>
+                                {{v.original|upper}}
+                            </td>
+                            <td>
+                                {{v.toRev|upper}}
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <td class="text-right">
+            <div class="btn-group media-group">
+                <a href="http://catalogo.tecneco.com/backend/index.php?ctrl=Gdpr&mod=b2b&action=approve&id={{id}}&approved=1" class="btn btn-success btn-sm"><i class="fa fa-cong"></i>
+                    Approva
+                </a>
+                <a href="http://catalogo.tecneco.com/backend/index.php?ctrl=Gdpr&mod=b2b&action=approve&id={{id}}&approved=0" class="btn btn-danger btn-sm"><i class="fa fa-cong"></i>
+                    Rifiuta
+                </a>
+            </div>
+        </td>
+
+        {% if links %}
+        <div class="m-t-30 align-center">
+            {{links.all|raw}}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

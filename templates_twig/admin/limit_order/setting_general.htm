@@ -1,0 +1,13 @@
+{% extends "layouts/base_form.htm" %}
+
+{% block edit_page_title %}Limite ordine{% endblock %}
+
+{% block content %}
+
+{% import "macro/form.htm" as form %}
+
+{{form.buildCol(dataform.min_qnt)}}
+{{form.buildCol(dataform.min_tot)}}
+
+
+{% endblock %}

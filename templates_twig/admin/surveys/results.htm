@@ -1,0 +1,56 @@
+{% extends "layouts/base.htm" %}
+{% block page_title %}Risultati Questionario{% endblock %}
+
+{% block content %}
+        {% if results %}
+        <div style="background: #FFFFFF; padding: 10px; margin-left: -10px;">
+                <div>
+					<ul>
+						<li><b>Iniziato il {{inizio|date("d/m/Y")}}</b></li>
+						<li><b>Ultimo aggiornamento il {{aggiornamento|date("d/m/Y")}}</b></li>
+						<li><b>Numero utenti che hannno partecipato: {{partecipanti}}</b></li>
+					</ul>
+
+				</div>
+				
+				
+				{% for question in results %}
+                <div class="w-100">
+                    <div class="w-100">
+                        <h4>
+                            {{question.name}}
+                        </h4>
+                    </div>
+                        {% for answer in question.answers %}
+                        <div class="row m-0">
+                            {%set perc = (answer.count/question.count)*100 %}
+                            <div class="col-sm-4">
+								{{answer.name}}
+
+                                <div class="progress">
+                                    <div class="progress-bar" style="width:{{perc}}%;"></div>
+                                </div>
+                            </div>
+                            <div class="col-sm-8">
+                                <h5>
+									<br>
+                                    <b>{{answer.count}}</b> voti / <b>{{perc | round }}%</b>
+                                </h5>
+                            </div>
+                        </div>
+                        {% endfor %}
+                </div>
+                {% endfor %}
+
+            </div>
+        {% else %}
+        {{tr('no_record')}}
+        {% endif %}
+    </div>
+    {% if links %}
+    <div class="m-t-30 align-center">
+        {{links.all|raw}}
+    </div>
+    {% endif %}
+
+{% endblock %}

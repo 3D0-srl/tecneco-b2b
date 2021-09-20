@@ -1,0 +1,14 @@
+{% extends 'layouts/mail.htm' %}
+{% block content %}
+
+<font face="Gotham, Helvetica Neue, Helvetica, Arial, sans-serif" color="#231f20" size="+2">
+    <strong>Gentile {{name}}&nbsp;{{surname}},</strong>
+</font>
+<br><br><br>
+<font face="Gotham, Helvetica Neue, Helvetica, Arial, sans-serif" color="#424242">
+    <p>abbiamo {% if approved %}approvato{% else %} rifiutato {% endif %} la tua richiesta di aggiornamento dei dati
+</font>
+
+
+
+{% endblock %}

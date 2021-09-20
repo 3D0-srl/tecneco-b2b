@@ -1,0 +1,17 @@
+{% extends "layouts/base_form.htm" %}
+
+{% block edit_page_title %}Risposta{% endblock %}
+
+{% block content %}
+
+{% import "macro/form.htm" as form %}
+
+
+{{form.build(dataform.id)}}
+{{form.build(dataform.id_survey)}}
+{{form.build(dataform.id_survey_question)}}
+{{form.buildCol(dataform.description)}}
+{{form.buildCol(dataform.sort)}}
+{{form.buildCol(dataform.active)}}
+
+{% endblock %}

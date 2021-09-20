@@ -1,0 +1,20 @@
+{% extends "layouts/base_form.htm" %}
+
+{% block edit_page_title %}Popup{% endblock %}
+
+{% block content %}
+
+{% import "macro/form.htm" as form %}
+
+
+{{form.build(dataform.id)}}
+{{form.buildCol(dataform.name)}}
+{{form.buildCol(dataform.date_from)}}
+{{form.buildCol(dataform.date_to)}}
+{{form.buildUploadImage(dataform.image)}}
+{{form.dropzone(dataform.attachment)}}
+{{form.buildCol(dataform.one_time_at_day)}}
+{{form.buildCol(dataform.admin_view_popup)}}
+{{form.buildCol(dataform.active)}}
+
+{% endblock %}

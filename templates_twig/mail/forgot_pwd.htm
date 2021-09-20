@@ -1,0 +1,28 @@
+{% extends 'layouts/mail.htm' %}
+{% block content %}
+
+<font face="Gotham, Helvetica Neue, Helvetica, Arial, sans-serif" color="#231f20" size="+2">
+	<strong>Gentile {{name}}&nbsp;{{surname}},</strong>
+</font>
+<br><br><br>
+<font face="Gotham, Helvetica Neue, Helvetica, Arial, sans-serif" color="#424242">
+	<p>abbiamo ricevuto la tua richiesta di recupero dei dati di accesso al sito
+
+	<br>Per reimpostare la password <a href="{{link}}">clicca qui</a></p>
+
+    Oppure copia e incolla nel tuo browser il seguente indirizzo
+	<p style=" margin-top: 30px; ">
+		{{link}}
+	</p>
+	<p>
+		Attenzione, il link sarà attivo per un periodo di un'ora.
+	</p>
+</font>
+
+
+
+{% endblock %}
+
+
+
+
