@@ -328,7 +328,7 @@ class ProductController extends ApiController{
 					else{
 						$error = [];
 						$error2 = null;
-						//controllo se è stato sostituito
+						//controllo se ï¿½ stato sostituito
 						$select = $database->select('*','catalogo_prodotto',"sku_stat='{$product}' OR sku='{$product}'");
 						if( okArray($select) && $select[0]['sostituito_da']){
 							$error['product_id']=$product;
@@ -562,6 +562,16 @@ class ProductController extends ApiController{
 
 
 	function getProductList($id_user,$list,$qnt_sku=array()){
+		require('modules/b2b/classes/BackOrder.class.php');
+		$user = User::withId($id_user);
+		
+		if( $user->backorder ){
+			$backorders = BackOrder::getAll($user->id);
+		}
+
+		
+
+
 		require('modules/b2b/classes/Tools.class.php');
 		require('modules/b2b/classes/ToolsNew.class.php');
 		$user = User::withId($id_user);
@@ -636,6 +646,16 @@ class ProductController extends ApiController{
 				'applicazioni' => $v['applicazioni']
 
 			);
+			
+			if( isset($backorders) && isset($backorders[$v['id']]) ){
+
+				$row['qnt_backorder_original'] = $backorders[$v['id']]['qnt'];
+				$row['qnt_backorder'] = $backorders[$v['id']]['qnt'];// - $qnt_input;
+				$row['qnt_backorder_old'] = $backorders[$v['id']]['qnt'] - $qnt_input;
+				$row['id_backorder'] = $backorders[$v['id']]['id'];
+				
+				
+			}
 			if( $prezzo['quantita_omaggio'] ){
 		
 				$multiplo_omaggio = (int)($qnt / $prezzo['quantita_totale']);
@@ -662,7 +682,7 @@ class ProductController extends ApiController{
                     $row['promo'] = 1;
 					//$descr = htmlentities($promo['description'], ENT_QUOTES|"ENT_HTML401", "UTF-8", true);
 					//$row['testo_promo'] =$descr;
-					//$row['testo_promo'] = preg_replace('/€/','</br>€',$promo['description']);
+					//$row['testo_promo'] = preg_replace('/ï¿½/','</br>ï¿½',$promo['description']);
                     $row['testo_promo'] = nl2br($promo['description']);
 					if( trim($promo['pulsante_testo']) ){
 						$row['pulsante_promo'] = strtoupper($promo['pulsante_testo']);

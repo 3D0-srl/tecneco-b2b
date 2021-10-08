@@ -1,5 +1,6 @@
 <?php
 require('modules/b2b/controllers/front/ApiController.php');
+require('modules/b2b/classes/BackOrder.class.php');
 ini_set('serialize_precision',5);
 class OrderController extends ApiController{
 	private $codice_cliente = 0;
@@ -16,6 +17,12 @@ class OrderController extends ApiController{
 		$id_user = $this->user['id'];
 		$action = $this->getAction();
 		switch($action){
+			case 'backorder':
+				require('modules/b2b/classes/Tools.class.php');
+				require('modules/b2b/classes/ToolsNew.class.php');
+				
+				$this->getBackOrder();
+				break;
 			case 'print_mail':
 				//$cart = Cart::prepareQuery()->where("status",'in_attesa')->getOne();
 				$cart = Cart::withId(12014);
@@ -41,11 +48,16 @@ class OrderController extends ApiController{
 				$cart = Cart::getCurrent();
 				$database = _obj('Database');
 				$tot = $database->select('sum(quantity) as num',"cartRow","cart={$cart->id}");
+
+				
 				
 			
-
-				//debugga($tot[0]['num']);exit;
-				$data->num_items = $tot[0]['num'];
+				//$data = new stdClass;
+				
+				$data = [
+					'tot' => $tot[0]['num'],
+					'tot_back' => BackOrder::getTotalItems($user)
+				];
 				$this->success($data);
 				break;
 			/*
@@ -151,20 +163,20 @@ class OrderController extends ApiController{
 				$id_address = $input['id_address'];
 				$aggiunto_a = $input['aggiunto_a']?$input['aggiunto_a']:null;
 
-				//verifico se può aggiungere
+				//verifico se pu� aggiungere
 				
                 $user = User::withId($id_user);
 				$_SESSION['userdata'] =  $user;
 
 				$database = _obj('Database');
 				$cart = Cart::getCurrent();
-				//controllo quantità
+				//controllo quantit�
 
 				$select = $database->select('r.id as id_order,p.sku,r.quantity,i.quantity as giacenza',"(product as p join cartRow as r on r.product=p.id) join product_inventory as i on i.id_product=r.product","r.cart={$cart->id}");
 				$errors = [];
 				foreach($select as $v){
 					if( $v['quantity'] > $v['giacenza'] ){
-						$errors[] = [ "La quantità ordinata per l'articolo {$v['sku']} è maggiore di quella presente in   magazzino {$v['giacenza']}"
+						$errors[] = [ "La quantit� ordinata per l'articolo {$v['sku']} � maggiore di quella presente in   magazzino {$v['giacenza']}"
 						];
 					}
 				}
@@ -254,10 +266,10 @@ class OrderController extends ApiController{
 				
 				if( !$aggiunto_a ){
 					if( $data['total_without_tax'] < $min_tot ){
-						$this->error("Il totale del tuo ordine è inferiore al limite minimo consentito: €".Eshop::formatMoney($min_tot)." (iva esclusa)");
+						$this->error("Il totale del tuo ordine � inferiore al limite minimo consentito: �".Eshop::formatMoney($min_tot)." (iva esclusa)");
 					}
 					if( $data['num_products'] < $min_qnt ){
-						$this->error("Il numero di articoli ordinati è inferiore al limite minimo consentito: ".$min_qnt);
+						$this->error("Il numero di articoli ordinati � inferiore al limite minimo consentito: ".$min_qnt);
 					}
 				}
 
@@ -271,11 +283,54 @@ class OrderController extends ApiController{
 		
 				//$result = $cart->close();
 				$cart->changeStatus('in_attesa');
+				$backOrders =$database->select('*','back_orders',"user_id={$id_user} AND cart_id<>{$cart->id}");
+				
+				if( okArray($backOrders) ){
+					$back_toupdate = [];
+					$back_deleted = [];
+					$rows = $database->select('product,quantity',"cartRow","cart={$cart->id}");
+					$_backOrders = [];
+					foreach($backOrders as $v){
+						$_backOrders[$v['product_id']] = $v;
+					}
+					foreach($rows as $v){
+						if( array_key_exists($v['product'],$_backOrders) ){
+							$riga = $_backOrders[$v['product']];
+							$riga['qnt'] = $riga['qnt'] - $v['quantity'];
+							if( $riga['qnt'] > 0 ){
+								$back_toupdate[] = $riga;
+							}else{
+								$back_deleted[] = $riga['id'];
+							}
+							
+						}
+					
+					}
+					if( okArray($back_toupdate)){
+						foreach($back_toupdate as $v){
+							$database->update('back_orders',"id={$v['id']} AND user_id={$id_user}",[
+								'qnt' => $v['qnt']
+							]);
+						}
+					}
+
+					if( okArray($back_deleted)){
+						foreach($back_deleted as $v){
+							$database->delete('back_orders',"id={$v} AND user_id={$id_user}");
+						}
+					}
+
+				}
+				
+
+				foreach($rows as $v){
+
+				}
 
 				//debugga($data);exit;
 				
 				
-                $this->sendMailOrder($cart);
+                //$this->sendMailOrder($cart);
 				$this->success(array('id_cart' => $cart->id));
 				break;
 			/*
@@ -485,13 +540,17 @@ class OrderController extends ApiController{
 				require('modules/b2b/classes/Tools.class.php');
 				require('modules/b2b/classes/ToolsNew.class.php');
 				//$id_product = _var('id_product');
-				
+				$database = _obj('Database');
 				$input = json_decode(file_get_contents('php://input'), true);
 				$list = $input['products'];
-
+				$fromBackOrder = _var('fromBackOrder');
+				
+				
 				$prodotti_aggiunti = []; 
 
 				$user = User::withId($id_user);
+
+				
 				$_SESSION['userdata'] =  $user;
 				$cart = Cart::getCurrent();
 				
@@ -507,153 +566,171 @@ class OrderController extends ApiController{
 						$row = Order::create();
 					}
 
-					$check = Tools::checkQuantity($v['id_product'],$v['quantity']);
-					if( $check['success'] ){
-
-						//if( $this->user['id'] == 2356 || $this->user['id'] == 1457 ){
-							$prezzo = ToolsNew::buildPrice($id_user,$v['id_product'],$v['quantity'],$this->user['no_promo']);
-						/*}else{
-							$prezzo = Tools::buildPrice($id_user,$v['id_product'],$v['quantity'],$this->user['no_promo']);
-						}*/
+					if( $user->backorder ){
+						if( $v['backOrder'] ){
+							$back_id = BackOrder::add($v['id_product'],$v['backOrder']);
+						}
 						
-						//$prezzo_serialized = serialize($prezzo);
-						//debugga($prezzo_serialized);exit;
-						if ($prezzo['prezzo'] == 0) {
-							$errors[] = array(
-								'index' => $ind,
-								'id_product' => $v['id_product'],
-								'error' => utf8_encode('Il prodotto non e al momento disponibile')
-							);
-						} else {
+					}
+					if( $v['quantity'] > 0 ){
+						$check = Tools::checkQuantity($v['id_product'],$v['quantity']);
+						if( $check['success'] ){
+
+							//if( $this->user['id'] == 2356 || $this->user['id'] == 1457 ){
+							$prezzo = ToolsNew::buildPrice($id_user,$v['id_product'],$v['quantity'],$this->user['no_promo']);
+							/*}else{
+								$prezzo = Tools::buildPrice($id_user,$v['id_product'],$v['quantity'],$this->user['no_promo']);
+							}*/
+							
+							//$prezzo_serialized = serialize($prezzo);
+							//debugga($prezzo_serialized);exit;
+
 							$data_order = $this->builDataOrder($cart,$v['id_product'],$prezzo,$v['quantity']);
 							$row->set($data_order);
+
 							$row->save();
-							$prodotti_aggiunti[] = [
+
+							if( $fromBackOrder ){
+								$database->delete('back_orders',"product_id={$v['id_product']} AND user_id={$id_user}");
+							}
+
+							
+
+							$aggiunto = [
 								'id_product' => $v['id_product'],
 								'id_order' => $row->id
 							];
+
+							if( $user->backorder && $back_id){
+								$aggiunto['id_back_order'] = $back_id;
+							}
+
+							$prodotti_aggiunti[] = $aggiunto;
+							
+						}else{
+							$error = array(
+								'index' => $ind,
+								'id_product' => $v['id_product'],
+								'error' => utf8_encode($check['error'])
+							);
+							if( $user->backorder && $back_id){
+								$error['id_back_order'] = $back_id;
+							}
+							$errors[] = $error;
 						}
-						
-					}else{
-						$errors[] = array(
-							'index' => $ind,
-							'id_product' => $v['id_product'],
-							'error' => utf8_encode($check['error'])
-						);
 					}
 				}
 				$database = _obj('Database');
 				$tot = $database->select('sum(quantity) as num, sum(quantity*price_without_tax) as tot_without_vat,sum(quantity*price) as tot, sum(quantity) as tot_pieces',"cartRow","cart={$cart->id}");
 				
+				
+
 				$data = array(
 					'errors' => $errors,
 					'num_items' => $tot[0]['num'],
 					'tot_items' => $tot[0]['tot'],
 					'tot_items_without_vat' => $tot[0]['tot_without_vat'],
 					'total_pieces' => $tot[0]['tot_pieces'],
+					'num_back_order_items' => BackOrder::getTotalItems($user),
 					'orders' => $prodotti_aggiunti
 				);
 				
 				$this->success($data);
 				break;
-			case 'get_price_new':
+			case 'update_back_order':
+				$user = User::withId($id_user);
+				$_SESSION['userdata'] = $user;
+				require_once('modules/b2b/classes/BackOrder.class.php');
+				$input = json_decode(file_get_contents('php://input'), true);
+				$database = _obj('Database');
+				$back = BackOrder::add($input['id_product'],$input['qnt']);
+				$this->success(
+					[
+						'id' =>	$back,
+						'total' => BackOrder::getTotalItems($user)
+					]
+				);
+				break;
+			case 'delete_back_order':
+				$database = _obj('Database');
+				$input = json_decode(file_get_contents('php://input'), true);
+				$ids = $input['ids'];
+				foreach($ids as $id){
+					$database->delete('back_orders',"id={$id} AND user_id={$id_user}");
+				}
+				$this->success(1);
+				break;
+			case 'get_price':
+
+				
+				
 				$id_product = _var('id_product'); //parametro input
 				$qnt = _var('qnt'); //parametro input
+				$escape_check = _var('escape_check');
 				//$sku = 2879;
 				if( !$id_user ){
 					//$id_user = 376;
 				}
 				//$qnt = 50;
+
+				if( $this->user['backorder'] ){
+					require_once('modules/b2b/classes/BackOrder.class.php');
+					$back = BackOrder::getRow($id_user,$id_product);
+					
+					
+				}
 				
-				require('modules/b2b/classes/Tools.class.php');
 				require('modules/b2b/classes/ToolsNew.class.php');
-				$check = Tools::checkQuantity($id_product,$qnt);
+				if( !$escape_check ){
+					$check = ToolsNew::checkQuantity($id_product,$qnt);
+				}else{
+					$check['success'] = true;
+					$check['max_qnt'] = $qnt;
+				}
+				
 				
 				if( $check['success'] ){
 					$prezzo = ToolsNew::buildPrice($id_user,$id_product,$qnt,$this->user['no_promo']);
 				}else{
+
+					$error = $check['error'];
 					$qnt = $check['max_qnt'];
 					$prezzo = ToolsNew::buildPrice($id_user,$id_product,$qnt,$this->user['no_promo']);
 				}
-
+				 $response = [];
 				
-				/*}else{
-					if( $check['success'] ){
-						$prezzo = Tools::buildPrice($id_user,$id_product,$qnt,$this->user['no_promo']);
-					}else{
-						$qnt = $check['max_qnt'];
-						$prezzo = Tools::buildPrice($id_user,$id_product,$qnt,$this->user['no_promo']);
-					}
-				}*/
 				
-				//debugga($prezzo);exit;
-				$response = $check;
-				//$response['prezzo'] = $prezzo;
+				
+				
 				$response['prezzo'] = array(
 					'prezzo' => $prezzo['prezzo_senza_iva'],
 					'totale' => $prezzo['prezzo_senza_iva']*$qnt,
 					'sconti' => is_array($prezzo['sconti_array'])?$prezzo['sconti_array']:array(),
 
 				);
+				$response['qnt'] = 
+					[
+					'max_qnt' => $check['max_qnt'],
+					'back_order' => $check['back_order']
+				];
+				if( isset($back) && $back){
+					
+					
+					
+					$qnt_back = (int)$back['qnt'];
+					$response['qnt']['back_order'] = $qnt_back;
+						
+					
+				}
 				if( $prezzo['quantita_omaggio'] > 0 ){
 					$multiplo = (int)($qnt/$prezzo['quantita_totale']);
 					$response['prezzo']['quantita_omaggio'] = $prezzo['quantita_omaggio']*$multiplo;
 				}
-				if( $this->user['id'] == 2356){
-					//debugga($response);exit;
+				if( !isset($error) ){
+					$this->success($response);
+				}else{
+					$this->error(utf8_encode($error),$response);
 				}
-				$this->success($response);
-
-				break;
-
-			case 'get_price':
-				
-				$id_product = _var('id_product'); //parametro input
-				$qnt = _var('qnt'); //parametro input
-				//$sku = 2879;
-				if( !$id_user ){
-					//$id_user = 376;
-				}
-				//$qnt = 50;
-				
-				require('modules/b2b/classes/Tools.class.php');
-				require('modules/b2b/classes/ToolsNew.class.php');
-				$check = Tools::checkQuantity($id_product,$qnt);
-				//if( $this->user['id'] == 2356 || $this->user['id'] == 1457 ){
-					if( $check['success'] ){
-						$prezzo = ToolsNew::buildPrice($id_user,$id_product,$qnt,$this->user['no_promo']);
-					}else{
-						$qnt = $check['max_qnt'];
-						$prezzo = ToolsNew::buildPrice($id_user,$id_product,$qnt,$this->user['no_promo']);
-					}
-
-				
-				/*}else{
-					if( $check['success'] ){
-						$prezzo = Tools::buildPrice($id_user,$id_product,$qnt,$this->user['no_promo']);
-					}else{
-						$qnt = $check['max_qnt'];
-						$prezzo = Tools::buildPrice($id_user,$id_product,$qnt,$this->user['no_promo']);
-					}
-				}*/
-				
-				//debugga($prezzo);exit;
-				$response = $check;
-				//$response['prezzo'] = $prezzo;
-				$response['prezzo'] = array(
-					'prezzo' => $prezzo['prezzo_senza_iva'],
-					'totale' => $prezzo['prezzo_senza_iva']*$qnt,
-					'sconti' => is_array($prezzo['sconti_array'])?$prezzo['sconti_array']:array(),
-
-				);
-				if( $prezzo['quantita_omaggio'] > 0 ){
-					$multiplo = (int)($qnt/$prezzo['quantita_totale']);
-					$response['prezzo']['quantita_omaggio'] = $prezzo['quantita_omaggio']*$multiplo;
-				}
-				if( $this->user['id'] == 2356){
-					//debugga($response);exit;
-				}
-				$this->success($response);
 			break;
 			case 'status':
 				
@@ -771,7 +848,7 @@ class OrderController extends ApiController{
 		$mail = _obj('Mail');
         $mail->setHtml($html);
 		$mail->setSubject($subject);
-		//più destinatari
+		//pi� destinatari
 
 		$to = [
 				//$cart->email,
@@ -852,7 +929,7 @@ class OrderController extends ApiController{
 		$mail = _obj('Mail');
         $mail->setHtml($html);
 		$mail->setSubject($subject);
-		//più destinatari
+		//pi� destinatari
 		
 		
 		$files = [
@@ -1011,6 +1088,96 @@ class OrderController extends ApiController{
 		return $data;
 	}
 
+
+	function getBackOrder(){
+		$id_user = $this->user['id'];
+		if( !$id_user ) $id_user = 2356;	
+		$user = User::withId($id_user);
+		
+		$_SESSION['userdata'] =  $user;
+		$database = _obj('Database');
+
+		$cart = Cart::getCurrent();
+		$currentOrders = $database->select('product,quantity','cartRow',"cart={$cart->id}");
+		foreach($currentOrders as $v){
+			$carrello[$v['product']] = $v['quantity'];
+		}
+
+		
+		$select = $database->select(
+		'c.id,i.quantity as qnt_dispo,p.id as id_product,p.sku,cp.quantita_imballo_multiplo,cp.profilt,cp.fornito_nishiboru,cp.filtro_antibatterico,cp.img_1,cp.id_tipologia,c.qnt,cp.rank,c.timestamp,c.id as id_order',
+		'(back_orders as c join (product as p left outer join product_inventory as i on i.id_product=p.id) on p.id=c.product_id) join catalogo_prodotto as cp on cp.sku_stat=p.sku',
+		"user_id={$id_user} order by sku");
+
+
+
+		
+		$tipologie = array();
+		$tipologia_select = $database->select('*','catalogo_tipologia_prodotto');
+		foreach($tipologia_select as $v){
+			$tipologie[$v['id']] = $v['nome'];
+		}
+		$ranks = [];
+		$rank_select = $database->select('*','catalogo_rank');
+		foreach($rank_select as $v){
+			$ranks[$v['id']] = $v['nome'];
+        }
+		foreach($select as $v){
+			
+			$prezzo = ToolsNew::buildPrice($id_user,$v['id_product'],$v['qnt'],$this->user['no_promo']);
+			//debugga($prezzo);exit;
+
+			$qnt_input = $v['qnt'];
+			if( $prezzo['quantita_omaggio'] ){
+				$multiplo_omaggio = (int)($qnt_input / $prezzo['quantita_totale']);
+				$quantita_omaggio =  $multiplo_omaggio*$prezzo['quantita_omaggio'];
+				$prezzo['quantita_omaggio'] = $quantita_omaggio;
+
+			}else{
+				$prezzo['quantita_omaggio'] = 0;
+			}
+			$qnt_omaggio += $prezzo['quantita_omaggio'];
+			$row = array(
+				'rank' => $ranks[$v['rank']],
+				'id_order' => (int)$v['id'],
+				'id_product' => $v['id_product'],
+				'sku' => $v['sku'],
+				'qnt_dispo' => (int)$v['qnt_dispo']-$carrello[$v['id_product']],
+				'id_tipologia' => $v['id_tipologia'],
+				'descrizione' => $tipologie[$v['id_tipologia']]?$tipologie[$v['id_tipologia']]:'',
+				'url_image' => $v['img_1']?$this->getUrlImage($v['img_1'],$v['sku']):'',
+				'prezzo_base' => $prezzo['prezzo_base'],
+				'prezzo' => $prezzo['prezzo_senza_iva'],
+				'prezzo_con_iva' => $prezzo['prezzo'],
+				'listino_italia' => $prezzo['prezzo_italia'],
+				'quantita_omaggio' => $prezzo['quantita_omaggio'],
+				'campagna_tipo' => $prezzo['campagna_tipo'],
+				
+				'sconti' => is_array($prezzo['sconti_array'])?array_values($prezzo['sconti_array']):array(),
+				'qnt_input' => (int)$qnt_input,
+				'qnt_input_old' => (int)$qnt_input,
+				'totale' => $qnt_input?($qnt_input*$prezzo['prezzo_senza_iva']):null,
+				'quantita_imballo_multiplo' => $v['quantita_imballo_multiplo'],
+				'profilt' => $v['profilt']?1:0,
+				'nishiboru' => $v['fornito_nishiboru']?1:0,
+				'adplus' => (!$v['antibatterico'] && $v['filtro_antibatterico'])?1:0
+
+			);
+
+			if( $row['campagna_tipo'] == 'prezzo' ){
+				$row['netto_campagna'] = $prezzo['prezzo_base'];
+			}else{
+				$row['netto_campagna'] = '';
+			}
+			$dati[] = $row;
+		}
+
+		$data = [
+			'rows' => $dati
+		];
+		//debugga($data);exit;
+		$this->success($data);
+	}
 
 
 	function getCart($id_cart=null){
