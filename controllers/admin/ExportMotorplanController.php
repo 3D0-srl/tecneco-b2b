@@ -5,7 +5,7 @@ class ExportMotorplanController extends ModuleController{
 	function display(){
 		$this->setMenu('export_motorplan');
 		$database = _obj('Database');
-		$utenti = $database->select("id,username,password,company as ragsoc","user as u join b2b_cliente as c on c.id_user=u.id","(id_profile IS NULL or id_profile = 0) AND asso='AS' and duplicato=0");
+		$utenti = $database->select("id,username,password,company as ragsoc","user as u join b2b_cliente as c on c.id_user=u.id","(id_profile IS NULL or id_profile = 0) AND (asso='AS' OR eprocurement=1) AND duplicato=0 AND active=1");
 		//debugga($utenti);exit;
 		foreach($utenti as $k => $v){
 			if( (int)$v['username'] == 0 ){
