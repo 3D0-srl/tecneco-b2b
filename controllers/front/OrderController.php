@@ -565,8 +565,9 @@ class OrderController extends ApiController{
 					if( !is_object($row) ){
 						$row = Order::create();
 					}
-
+					$back_id = null;
 					if( $user->backorder ){
+						$back_id = null;
 						if( $v['backOrder'] ){
 							$back_id = BackOrder::add($v['id_product'],$v['backOrder']);
 						}
@@ -618,6 +619,15 @@ class OrderController extends ApiController{
 							}
 							$errors[] = $error;
 						}
+					}else{
+						if( $user->backorder && $back_id ){
+							$aggiunto = [
+								'id_product' => $v['id_product'],
+								'id_back_order' => $back_id
+							];
+
+							$prodotti_aggiunti[] = $aggiunto;
+						}
 					}
 				}
 				$database = _obj('Database');
@@ -659,6 +669,10 @@ class OrderController extends ApiController{
 					$database->delete('back_orders',"id={$id} AND user_id={$id_user}");
 				}
 				$this->success(1);
+				break;
+			case 'check_riassortimento':
+				
+				$this->success(BackOrder::getNuoviProdotti($id_user));
 				break;
 			case 'get_price':
 

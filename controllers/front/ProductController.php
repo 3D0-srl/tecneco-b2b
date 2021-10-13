@@ -199,7 +199,7 @@ class ProductController extends ApiController{
 		$id_user = $this->user['id'];
 		$user = User::withId($id_user);
 
-
+		$qnt_desiderata = $qnt;
 		//if( $this->user['id'] == 2356 || $this->user['id'] == 1457 ){
 			if( okArray($qnt) ){
 				
@@ -247,6 +247,8 @@ class ProductController extends ApiController{
 									if( $product != $single_product['sku'] ){
 										//$product =  $single_product['sku'];
 										$qnt[$single_product['sku']] = $qnt[$product];
+										$qnt_desiderata[$single_product['sku']] = $qnt[$product];
+
 									}
 									$error2 = null;
 									if( $single_product['qnt_dispo'] > 0 ){
@@ -273,6 +275,13 @@ class ProductController extends ApiController{
 												'qnt_order' => $qnt[$product]
 
 											];
+										 if( $user->backorder ){
+											$qnt[$product] = 0;
+											if( $product != $single_product['sku'] ){
+												$qnt[$single_product['sku']] = $single_product['qnt_dispo'];
+											}
+											array_push($list, $single_product);
+										 }
 									}
 								}
 								
@@ -321,11 +330,18 @@ class ProductController extends ApiController{
 										'qnt_order' => $qnt[$product],
 								 ];
 								 array_push($errors, $error);
+
+								 if( $user->backorder ){
+									$qnt[$product] = 0;
+									if( $product != $single_product['sku'] ){
+										$qnt[$single_product['sku']] = $single_product['qnt_dispo'];
+									}
+									array_push($list, $single_product);
+								 }
 							}
 							
 						}
-					}
-					else{
+					}else{
 						$error = [];
 						$error2 = null;
 						//controllo se � stato sostituito
@@ -383,7 +399,8 @@ class ProductController extends ApiController{
         }
 		
         $toReturn['errors'] = $errors;
-        $toReturn['list'] = $this->getProductList($id_user,$list,$qnt);
+		//debugga($list);exit;
+        $toReturn['list'] = $this->getProductList($id_user,$list,$qnt,$qnt_desiderata);
 		return $toReturn;
 
 	}
@@ -561,7 +578,7 @@ class ProductController extends ApiController{
 
 
 
-	function getProductList($id_user,$list,$qnt_sku=array()){
+	function getProductList($id_user,$list,$qnt_sku=array(), $qnt_desiderata = array()){
 		require('modules/b2b/classes/BackOrder.class.php');
 		$user = User::withId($id_user);
 		
@@ -646,15 +663,28 @@ class ProductController extends ApiController{
 				'applicazioni' => $v['applicazioni']
 
 			);
-			
-			if( isset($backorders) && isset($backorders[$v['id']]) ){
+			if( $user->backorder ){
+				if( okArray($backorders) && isset($backorders[$v['id']]) ){
 
-				$row['qnt_backorder_original'] = $backorders[$v['id']]['qnt'];
-				$row['qnt_backorder'] = $backorders[$v['id']]['qnt'];// - $qnt_input;
-				$row['qnt_backorder_old'] = $backorders[$v['id']]['qnt'] - $qnt_input;
-				$row['id_backorder'] = $backorders[$v['id']]['id'];
-				
-				
+					$row['qnt_backorder_original'] = $backorders[$v['id']]['qnt'];
+					$row['qnt_backorder'] = $backorders[$v['id']]['qnt'];// - $qnt_input;
+					$row['qnt_backorder_old'] = $backorders[$v['id']]['qnt'] - $qnt_input;
+					$row['id_backorder'] = $backorders[$v['id']]['id'];
+					
+					
+				}else{
+					$_qnt_desiderata = $qnt_desiderata[$v['sku']];
+					$_diff_desiderata = $qnt_desiderata[$v['sku']] - $v['qnt_dispo'];
+					if( $_diff_desiderata  > 0){
+						
+						$row['qnt_backorder_original'] =  $_diff_desiderata;
+						$row['qnt_backorder'] = $_diff_desiderata;
+						$row['qnt_backorder_old'] =$_diff_desiderata;
+					}
+					
+
+						
+				}
 			}
 			if( $prezzo['quantita_omaggio'] ){
 		

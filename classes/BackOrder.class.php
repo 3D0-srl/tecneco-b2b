@@ -121,6 +121,63 @@ class BackOrder extends Base{
         return $tot;
     }
 
+
+    public static function getNuoviProdotti($id_user){
+
+        if( is_object($id_user) ){
+            $user = $id_user;
+        }else{
+            $user = User::withId($id_user);
+           
+            $_SESSION['userdata'] =  $user;
+        }
+        $cart = Cart::getCurrent();
+       
+        $all = self::getAll($user->id);
+        
+       
+        $database = _obj('Database');
+       
+
+        $filtrati = array_filter($all,function($item){
+            if( $item['cart_id'] != $cart->id){
+                return true;
+            }else{
+                return false;
+            }
+        });
+       
+       if( okArray($filtrati) ){
+            $tipologie = array();
+            $tipologia_select = $database->select('*','catalogo_tipologia_prodotto');
+            foreach($tipologia_select as $v){
+                $tipologie[$v['id']] = $v['nome'];
+            }
+        
+            $where = trim(array_reduce(
+                array_map(function($item){
+                    return $item['product_id'];
+                },$filtrati),function($res,$id){
+                return $res.="{$id},";
+            },''),',');
+            $list = $database->select('p.sku,p.id,i.quantity,cp.id_tipologia as tipologia','product_inventory as i join (product as p join catalogo_prodotto as cp on cp.sku_stat=p.sku) on p.id=i.id_product',"p.id IN ({$where})");
+           
+            if( okArray($list) ){
+               foreach($list as $k => $v){
+                   if( $filtrati[$v['id']]['qnt'] > $v['quantity'] ){
+                        unset($list[$k]);
+                   }else{
+                       $list[$k]['tipologia'] = $tipologie[$v['tipologia']];
+                   }
+               }
+              
+               return $list;
+           }
+        }
+
+        return null;
+    }
+
 }
 
 ?>
