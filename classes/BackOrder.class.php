@@ -132,6 +132,18 @@ class BackOrder extends Base{
             $_SESSION['userdata'] =  $user;
         }
         $cart = Cart::getCurrent();
+
+       
+		$database = _obj('Database');
+
+		
+		$currentOrders = $database->select('product,quantity','cartRow',"cart={$cart->id}");
+		foreach($currentOrders as $v){
+			$carrello[$v['product']] = $v['quantity'];
+		}
+
+
+
        
         $all = self::getAll($user->id);
         
@@ -164,10 +176,14 @@ class BackOrder extends Base{
            
             if( okArray($list) ){
                foreach($list as $k => $v){
-                   if( $filtrati[$v['id']]['qnt'] > $v['quantity'] ){
-                        unset($list[$k]);
+                   $in_cart = $carrello[$v['id']]?$carrello[$v['id']]:0;
+                   $dispo = $v['quantity'] - $in_cart;
+                  
+                   if( $dispo > 0 && (($filtrati[$v['id']]['qnt'] - $dispo) !=  $filtrati[$v['id']]['qnt']) ){
+                        
+                        $list[$k]['tipologia'] = $tipologie[$v['tipologia']];
                    }else{
-                       $list[$k]['tipologia'] = $tipologie[$v['tipologia']];
+                        unset($list[$k]);
                    }
                }
               
@@ -177,6 +193,7 @@ class BackOrder extends Base{
 
         return null;
     }
+
 
 }
 

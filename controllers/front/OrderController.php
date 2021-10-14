@@ -574,7 +574,39 @@ class OrderController extends ApiController{
 						
 					}
 					if( $v['quantity'] > 0 ){
-						$check = Tools::checkQuantity($v['id_product'],$v['quantity']);
+						
+						
+						
+
+						//controllo se l'utente è un utente backorder e se l'aggiunta avviene dalla tab backorder
+						if( $user->backorder && $fromBackOrder){
+
+							//quantita da aggiungere a quella presente nel carrello
+							$qnt_back_order_da_aggiungere = $v['quantity'];
+							
+							
+							//aggiungo la quantità già presente nel carrello
+							if($row->id){
+								$v['quantity'] += $row->quantity;
+							}
+							$check = Tools::checkQuantity($v['id_product'],$v['quantity']);
+							//se il controllo non va a buon fine imposto la qnt a quella massima per il prodotto 
+							//e imposto il controllo come positivo
+							if( !$check['success']){
+								$check['success'] = true;
+								//aggiorno la quantità da aggiungere che sarà diminuita rispetto a prima
+								$qnt_back_order_da_aggiungere = $v['quantity']-$check['max_qnt'];
+								$v['quantity'] = $check['max_qnt'];
+
+								
+							}
+							
+						}else{
+							$check = Tools::checkQuantity($v['id_product'],$v['quantity']);
+						}
+
+						
+					
 						if( $check['success'] ){
 
 							//if( $this->user['id'] == 2356 || $this->user['id'] == 1457 ){
@@ -592,7 +624,20 @@ class OrderController extends ApiController{
 							$row->save();
 
 							if( $fromBackOrder ){
-								$database->delete('back_orders',"product_id={$v['id_product']} AND user_id={$id_user}");
+								//rimuovo dal backorder la quantità aggiunta
+								$old_back_order = BackOrder::getRow($id_user,$v['id_product']);
+								
+								if( $old_back_order['qnt'] <= $qnt_back_order_da_aggiungere ){
+									$database->delete('back_orders',"product_id={$v['id_product']} AND user_id={$id_user}");
+								}else{
+									
+									$database->update('back_orders',
+													"product_id={$v['id_product']} AND user_id={$id_user}",
+													[
+														'qnt' => $old_back_order['qnt']-$qnt_back_order_da_aggiungere
+													]
+									);
+								}
 							}
 
 							
