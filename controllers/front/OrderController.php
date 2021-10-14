@@ -330,7 +330,7 @@ class OrderController extends ApiController{
 				//debugga($data);exit;
 				
 				
-                //$this->sendMailOrder($cart);
+                $this->sendMailOrder($cart);
 				$this->success(array('id_cart' => $cart->id));
 				break;
 			/*

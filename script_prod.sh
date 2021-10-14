@@ -1,5 +1,6 @@
 #!/bin/bash
 echo "PRODUCTION"
+rm -r -f deploy
 mkdir deploy
 cp -R controllers deploy/
 cp -R classes deploy/
