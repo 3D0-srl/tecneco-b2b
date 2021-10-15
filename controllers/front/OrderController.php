@@ -17,11 +17,14 @@ class OrderController extends ApiController{
 		$id_user = $this->user['id'];
 		$action = $this->getAction();
 		switch($action){
+			case 'print_backorder':
+				$print = true;
 			case 'backorder':
+				if( !isset($print) ) $print = false;
 				require('modules/b2b/classes/Tools.class.php');
 				require('modules/b2b/classes/ToolsNew.class.php');
 				
-				$this->getBackOrder();
+				$this->getBackOrder($print);
 				break;
 			case 'print_mail':
 				//$cart = Cart::prepareQuery()->where("status",'in_attesa')->getOne();
@@ -1083,7 +1086,6 @@ class OrderController extends ApiController{
 		
 		$pdf->output(wkhtmltopdf::MODE_DOWNLOAD,'order.pdf');
 		exit;
-		return $data;
 	}
 
 
@@ -1148,7 +1150,7 @@ class OrderController extends ApiController{
 	}
 
 
-	function getBackOrder(){
+	function getBackOrder($print=false){
 		$id_user = $this->user['id'];
 		if( !$id_user ) $id_user = 2356;	
 		$user = User::withId($id_user);
@@ -1229,6 +1231,36 @@ class OrderController extends ApiController{
 				$row['netto_campagna'] = '';
 			}
 			$dati[] = $row;
+		}
+
+		if( $print ){
+			$this->reistraFunzioniTemplate();
+			$this->setVar('user',$_SESSION['userdata']);
+			$this->setVar('ordini',$dati);
+		
+			
+			$this->setVar('baseurl',"http://".$_SERVER['SERVER_NAME']."/modules/b2b/images/");
+
+			
+			ob_start();
+			$this->output('footer_pdf.htm');
+			$footer = ob_get_contents();
+			ob_end_clean();
+
+
+			ob_start();
+			$this->output('print_backorder.htm');
+			$html = ob_get_contents();
+			ob_end_clean();
+
+			$pdf = _obj('PDF2');
+			
+			$pdf->setHtml($html);
+
+			$pdf->setFooterHtml($footer);
+			
+			$data = $pdf->output(wkhtmltopdf::MODE_STRING);
+			$this->success(base64_encode($data));
 		}
 
 		$data = [
