@@ -86,7 +86,7 @@ class ProductController extends ApiController{
 				$this->success($data);
 				break;
 			case 'search_product':
-				$sku = _var('sku');  //parametro input
+				$sku = strtoupper(_var('sku'));  //parametro input
 				
 
 				/* ESEMPIO */

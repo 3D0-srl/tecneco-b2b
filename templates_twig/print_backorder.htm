@@ -87,7 +87,7 @@ tr {
 							{{user.company}}<br><br>
 							<strong>Codice cliente:</strong>
 							<br>
-							{{user.codice_cliente}}<br><br>
+							{{codice_gestionale}}<br><br>
 							<strong>Indirizzo</strong><br>{{user.address}}, {{user.postalCode}} {{user.city}} ({{user.province}})<br><br>
 							<br>	
 						</td>
@@ -154,10 +154,10 @@ tr {
 						<td style="border-top: 2px solid #b3b3b3;" colspan="2"><strong>Totale Iva incl.</strong></td>
 					</tr>
 					<tr>
-						<td colspan="2">{{data.num_products}} {%if data.qnt_omaggio %}<span style="color: #EE2323; font-style: italic;">+{{data.qnt_omaggio}} omaggio</span>{% endif %}</td>
-						<td colspan="2">€<span  class="totale_carrello">{{formattanumero(data.total_without_vat)}}</span></td>
-						<td colspan="2">€<span id="" class="totale_carrello">{{formattanumero(data.total_vat)}}</span></td>
-						<td colspan="2">€<span id="" class="totale_carrello"><strong>{{formattanumero(data.total)}}</strong></span></td>
+						<td colspan="2">{{info.tot_pezzi}}</td>
+						<td colspan="2">€<span  class="totale_carrello">{{formattanumero(info.totale_senza_iva)}}</span></td>
+						<td colspan="2">€<span id="" class="totale_carrello">{{formattanumero(info.iva)}}</span></td>
+						<td colspan="2">€<span id="" class="totale_carrello"><strong>{{formattanumero(info.totale)}}</strong></span></td>
 					</tr>
 					
 

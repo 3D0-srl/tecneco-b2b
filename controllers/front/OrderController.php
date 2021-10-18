@@ -1236,9 +1236,30 @@ class OrderController extends ApiController{
 		if( $print ){
 			$this->reistraFunzioniTemplate();
 			$this->setVar('user',$_SESSION['userdata']);
-			$this->setVar('ordini',$dati);
-		
+			$data_cliente = $database->select('*','b2b_cliente',"id_user={$user->id}");
+			if( okArray($data_cliente) ){
+				$this->setVar('codice_gestionale',$data_cliente[0]['codice_gestionale']);
+			}
+
+			$tot_pezzi = 0;
+			$totale = 0;
+
 			
+			foreach($dati as $r){
+				$tot_pezzi += $r['qnt_input'];
+				$totale += $r['totale']; 
+			
+			}
+			$iva = 1.22;
+			$this->setVar('ordini',$dati);
+			$info = [
+
+				'tot_pezzi' => $tot_pezzi,
+				'totale_senza_iva' => $totale,
+				'totale' => $totale*$iva
+			];
+			$info['iva'] = $info['totale']-$info['totale_senza_iva'];
+			$this->setVar('info',$info);
 			$this->setVar('baseurl',"http://".$_SERVER['SERVER_NAME']."/modules/b2b/images/");
 
 			
